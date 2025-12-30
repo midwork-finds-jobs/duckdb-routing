@@ -36,17 +36,13 @@ SELECT
     round(r.distance_km, 2) as km,
     round(r.duration_minutes, 1) as minutes
 FROM (
-    -- Option 1: Direct GEOMETRY type
+    -- Option 1: GEOMETRY type (recommended)
     SELECT 'GEOMETRY type' as method,
-           travel_time_route(ST_Point(12.4578, 43.9424), ST_Point(12.3436, 43.8967), 'auto') as r
+           travel_time_route_wkb(ST_Point(12.4578, 43.9424), ST_Point(12.3436, 43.8967), 'auto') as r
     UNION ALL
-    -- Option 2: WKT strings (no spatial extension needed)
-    SELECT 'WKT string',
-           travel_time_route('POINT(12.4578 43.9424)', 'POINT(12.3436 43.8967)', 'auto')
-    UNION ALL
-    -- Option 3: WKB format (explicit conversion)
+    -- Option 2: WKB format (explicit conversion)
     SELECT 'WKB blob',
-           travel_time_route(ST_AsWKB(ST_Point(12.4578, 43.9424)), ST_AsWKB(ST_Point(12.3436, 43.8967)), 'auto')
+           travel_time_route_wkb(ST_AsWKB(ST_Point(12.4578, 43.9424)), ST_AsWKB(ST_Point(12.3436, 43.8967)), 'auto')
 );
 
 SELECT 'Done!' as status;

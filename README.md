@@ -169,12 +169,7 @@ Calculate route between two points with WKB BLOB output. Returns struct with:
 - `duration_minutes` - Estimated travel time in minutes
 - `geometry` - Route path as WKB BLOB (use `ST_GeomFromWKB()` to convert to GEOMETRY)
 
-Accepts any geometry format:
-
 ```sql
--- WKT strings
-SELECT travel_time_route_wkb('POINT(24.75 59.43)', 'POINT(26.72 58.37)', 'auto');
-
 -- GEOMETRY type (spatial extension)
 SELECT travel_time_route_wkb(ST_Point(24.75, 59.43), ST_Point(26.72, 58.37), 'auto');
 

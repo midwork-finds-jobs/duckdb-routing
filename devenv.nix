@@ -29,6 +29,13 @@
     # For this extension specifically
     openssl
     curl
+
+    # Valhalla dependencies (Valhalla itself via vcpkg)
+    boost
+    protobuf
+    sqlite
+    lua
+    rapidjson
   ];
 
   # Rust toolchain for the routing library

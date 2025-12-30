@@ -24,14 +24,19 @@
 namespace duckdb {
 
 // Global router instance (thread-safe via mutex)
-static std::mutex g_router_mutex;
-static ValhallaRouter *g_router = nullptr;
-static std::string g_config_path;
+// Non-static so config_setting.cpp can access them
+std::mutex g_router_mutex;
+void *g_router = nullptr; // ValhallaRouter* (opaque handle)
+std::string g_config_path;
+
+// Forward declarations for new functions
+extern void RegisterValhallaTilesSetting(DatabaseInstance &instance);
+extern void RegisterValhallaBuildTilesFunction(ExtensionLoader &loader);
 
 // ============ Helper Functions ============
 
 static void EnsureRouterLoaded(const char *costing) {
-	if (!g_router || !valhalla_is_ready(g_router)) {
+	if (!g_router || !valhalla_is_ready((ValhallaRouter *)g_router)) {
 		throw InvalidInputException("Valhalla router not loaded. Call travel_time_load_config() first.");
 	}
 }
@@ -442,7 +447,7 @@ static void TravelTimeLoadConfigFun(DataChunk &args, ExpressionState &state, Vec
 
 		// Free existing router if different config
 		if (g_router && g_config_path != path_str) {
-			valhalla_free(g_router);
+			valhalla_free((ValhallaRouter *)g_router);
 			g_router = nullptr;
 		}
 
@@ -465,7 +470,7 @@ static void TravelTimeIsLoadedFun(DataChunk &args, ExpressionState &state, Vecto
 	idx_t count = args.size();
 
 	std::lock_guard<std::mutex> lock(g_router_mutex);
-	bool is_loaded = g_router && valhalla_is_ready(g_router);
+	bool is_loaded = g_router && valhalla_is_ready((ValhallaRouter *)g_router);
 
 	for (idx_t i = 0; i < count; i++) {
 		FlatVector::GetData<bool>(result)[i] = is_loaded;
@@ -501,8 +506,8 @@ static void TravelTimeFun(DataChunk &args, ExpressionState &state, Vector &resul
 		std::lock_guard<std::mutex> lock(g_router_mutex);
 		EnsureRouterLoaded(costing.GetData());
 
-		int num_points = valhalla_route(g_router, lat1, lon1, lat2, lon2, costing.GetData(), &route_result,
-		                                points.data(), MAX_POINTS);
+		int num_points = valhalla_route((ValhallaRouter *)g_router, lat1, lon1, lat2, lon2, costing.GetData(),
+		                                &route_result, points.data(), MAX_POINTS);
 
 		if (num_points < 0) {
 			FlatVector::SetNull(result, i, true);
@@ -540,8 +545,8 @@ static void TravelTimeRouteWktFun(DataChunk &args, ExpressionState &state, Vecto
 		std::lock_guard<std::mutex> lock(g_router_mutex);
 		EnsureRouterLoaded(costing.GetData());
 
-		int num_points = valhalla_route_wkt(g_router, from_wkt.GetData(), to_wkt.GetData(), costing.GetData(),
-		                                    &route_result, points.data(), MAX_POINTS);
+		int num_points = valhalla_route_wkt((ValhallaRouter *)g_router, from_wkt.GetData(), to_wkt.GetData(),
+		                                    costing.GetData(), &route_result, points.data(), MAX_POINTS);
 
 		if (num_points < 0) {
 			FlatVector::SetNull(result, i, true);
@@ -588,9 +593,9 @@ static void TravelTimeRouteWkbFun(DataChunk &args, ExpressionState &state, Vecto
 		EnsureRouterLoaded(costing.GetData());
 
 		int num_points = valhalla_route_wkb(
-		    g_router, reinterpret_cast<const unsigned char *>(from_wkb.GetData()), static_cast<int>(from_wkb.GetSize()),
-		    reinterpret_cast<const unsigned char *>(to_wkb.GetData()), static_cast<int>(to_wkb.GetSize()),
-		    costing.GetData(), &route_result, points.data(), MAX_POINTS);
+		    (ValhallaRouter *)g_router, reinterpret_cast<const unsigned char *>(from_wkb.GetData()),
+		    static_cast<int>(from_wkb.GetSize()), reinterpret_cast<const unsigned char *>(to_wkb.GetData()),
+		    static_cast<int>(to_wkb.GetSize()), costing.GetData(), &route_result, points.data(), MAX_POINTS);
 
 		if (num_points < 0) {
 			FlatVector::SetNull(result, i, true);
@@ -649,22 +654,22 @@ static void TravelTimeRouteUnifiedFun(DataChunk &args, ExpressionState &state, V
 		if (from_geom.is_wkb && to_geom.is_wkb) {
 			// Both WKB
 			num_points = valhalla_route_wkb(
-			    g_router, reinterpret_cast<const unsigned char *>(from_geom.data), static_cast<int>(from_geom.size),
-			    reinterpret_cast<const unsigned char *>(to_geom.data), static_cast<int>(to_geom.size),
-			    costing.GetData(), &route_result, points.data(), MAX_POINTS);
+			    (ValhallaRouter *)g_router, reinterpret_cast<const unsigned char *>(from_geom.data),
+			    static_cast<int>(from_geom.size), reinterpret_cast<const unsigned char *>(to_geom.data),
+			    static_cast<int>(to_geom.size), costing.GetData(), &route_result, points.data(), MAX_POINTS);
 		} else if (!from_geom.is_wkb && !to_geom.is_wkb) {
 			// Both WKT - need null-terminated strings
 			std::string from_str(from_geom.data, from_geom.size);
 			std::string to_str(to_geom.data, to_geom.size);
-			num_points = valhalla_route_wkt(g_router, from_str.c_str(), to_str.c_str(), costing.GetData(),
-			                                &route_result, points.data(), MAX_POINTS);
+			num_points = valhalla_route_wkt((ValhallaRouter *)g_router, from_str.c_str(), to_str.c_str(),
+			                                costing.GetData(), &route_result, points.data(), MAX_POINTS);
 		} else {
 			// Mixed - convert WKT to use, prefer WKB path if one is WKB
 			// For simplicity, use WKT if either is WKT
 			std::string from_str(from_geom.data, from_geom.size);
 			std::string to_str(to_geom.data, to_geom.size);
-			num_points = valhalla_route_wkt(g_router, from_str.c_str(), to_str.c_str(), costing.GetData(),
-			                                &route_result, points.data(), MAX_POINTS);
+			num_points = valhalla_route_wkt((ValhallaRouter *)g_router, from_str.c_str(), to_str.c_str(),
+			                                costing.GetData(), &route_result, points.data(), MAX_POINTS);
 		}
 
 		if (num_points < 0) {
@@ -709,7 +714,7 @@ static void TravelTimeLocateFun(DataChunk &args, ExpressionState &state, Vector 
 		std::lock_guard<std::mutex> lock(g_router_mutex);
 		EnsureRouterLoaded(costing.GetData());
 
-		int result_code = valhalla_locate(g_router, lat, lon, costing.GetData(), &out_lat, &out_lon);
+		int result_code = valhalla_locate((ValhallaRouter *)g_router, lat, lon, costing.GetData(), &out_lat, &out_lon);
 
 		if (result_code < 0) {
 			FlatVector::SetNull(result, i, true);
@@ -736,11 +741,11 @@ static void TravelTimeRequestFun(DataChunk &args, ExpressionState &state, Vector
 		string_t json = FlatVector::GetData<string_t>(json_vec)[i];
 
 		std::lock_guard<std::mutex> lock(g_router_mutex);
-		if (!g_router || !valhalla_is_ready(g_router)) {
+		if (!g_router || !valhalla_is_ready((ValhallaRouter *)g_router)) {
 			throw InvalidInputException("Valhalla router not loaded");
 		}
 
-		char *response = valhalla_request(g_router, action.GetData(), json.GetData());
+		char *response = valhalla_request((ValhallaRouter *)g_router, action.GetData(), json.GetData());
 
 		if (!response) {
 			FlatVector::SetNull(result, i, true);
@@ -824,11 +829,11 @@ static unique_ptr<GlobalTableFunctionState> MatrixInitGlobal(ClientContext &cont
 	state->results.resize(total);
 
 	std::lock_guard<std::mutex> lock(g_router_mutex);
-	if (!g_router || !valhalla_is_ready(g_router)) {
+	if (!g_router || !valhalla_is_ready((ValhallaRouter *)g_router)) {
 		throw InvalidInputException("Valhalla router not loaded");
 	}
 
-	int count = valhalla_matrix(g_router, bind_data.src_lats.data(), bind_data.src_lons.data(),
+	int count = valhalla_matrix((ValhallaRouter *)g_router, bind_data.src_lats.data(), bind_data.src_lons.data(),
 	                            static_cast<int>(bind_data.src_lats.size()), bind_data.dst_lats.data(),
 	                            bind_data.dst_lons.data(), static_cast<int>(bind_data.dst_lats.size()),
 	                            bind_data.costing.c_str(), state->results.data());
@@ -928,6 +933,12 @@ static void LoadInternal(ExtensionLoader &loader) {
 	                           LogicalType::VARCHAR},
 	                          MatrixFunction, MatrixBind, MatrixInitGlobal);
 	loader.RegisterFunction(matrix_func);
+
+	// Register valhalla_tiles setting
+	RegisterValhallaTilesSetting(loader.GetDatabaseInstance());
+
+	// Register valhalla_build_tiles function
+	RegisterValhallaBuildTilesFunction(loader);
 }
 
 void TravelTimeExtension::Load(ExtensionLoader &loader) {

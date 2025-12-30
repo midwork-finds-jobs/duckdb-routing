@@ -95,9 +95,9 @@ SELECT
     round(r.distance_km, 1) as km,
     round(r.duration_minutes, 0) as minutes
 FROM (
-    SELECT travel_time_route(
-        'POINT(24.7536 59.4370)',  -- Tallinn (WKT: lon lat)
-        'POINT(26.7290 58.3780)',  -- Tartu
+    SELECT travel_time_route_wkb(
+        ST_Point(24.7536, 59.4370),  -- Tallinn (lon, lat)
+        ST_Point(26.7290, 58.3780),  -- Tartu
         'auto'
     ) as r
 );

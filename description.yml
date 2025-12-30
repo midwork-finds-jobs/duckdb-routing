@@ -1,7 +1,7 @@
 extension:
   name: travel_time
   description: DuckDB extension for travel time and route calculations using Valhalla routing engine
-  version: 0.1.0
+  version: 0.2.0
   language: C++
   build: cmake
   license: MIT
@@ -13,29 +13,33 @@ extension:
 
 repo:
   github: onnimonni/duckdb-routing
-  ref: v0.1.0
+  ref: v0.2.0
 
 docs:
   hello_world: |
-    -- Load extension and spatial support
-    LOAD travel_time;
+    -- Load extensions
+    INSTALL httpfs; LOAD httpfs;
     INSTALL spatial; LOAD spatial;
+    LOAD travel_time;
 
-    -- Load routing tiles (build first with valhalla_build_tiles)
-    SELECT travel_time_load_config('./valhalla_data/valhalla.json');
+    -- Download and build tiles (Pure SQL!)
+    SELECT valhalla_build_tiles(
+        'https://download.geofabrik.de/europe/monaco-latest.osm.pbf',
+        './monaco_tiles'
+    );
 
-    -- Load geometry macro for GEOMETRY output
-    .read examples/geometry_macro.sql
+    -- Load tiles
+    SET valhalla_tiles = './monaco_tiles';
 
-    -- Calculate route from Tallinn to Tartu
+    -- Calculate route
     SELECT
         round(r.distance_km, 1) as km,
-        round(r.duration_minutes, 0) as minutes,
+        round(r.duration_minutes, 1) as minutes,
         ST_NPoints(r.geometry) as waypoints
     FROM (
         SELECT travel_time_route(
-            ST_Point(24.7536, 59.4370),  -- Tallinn
-            ST_Point(26.7290, 58.3780),  -- Tartu
+            ST_Point(7.4275, 43.7397),  -- Casino Monte-Carlo
+            ST_Point(7.4254, 43.7308),  -- Oceanographic Museum
             'auto'
         ) as r
     );
@@ -45,8 +49,10 @@ docs:
 
     Point-to-point routing with distance, duration, and geometry using the Valhalla routing engine.
 
-    ## Key Features
+    ## Key Features (v0.2.0)
 
+    - **Pure SQL Workflow**: Download and build tiles entirely from SQL using `valhalla_build_tiles()`
+    - **Smart Configuration**: Use `SET valhalla_tiles = './path'` to load routing data
     - **Flexible Input**: Accepts WKT strings, WKB blobs, or GEOMETRY types
     - **GEOMETRY Output**: Returns proper GEOMETRY types (via macro) or WKB blobs
     - **Multi-Mode Routing**: Supports auto, bicycle, pedestrian, truck, bus, taxi, motor_scooter
@@ -55,23 +61,29 @@ docs:
 
     ## Functions
 
+    **Tile Management (NEW in v0.2.0):**
+    - `valhalla_build_tiles(pbf_url, output_dir)` - Download PBF and build routing tiles
+    - `SET valhalla_tiles = 'path'` - Load tiles (auto-detects valhalla.json)
+
+    **Routing:**
     - `travel_time_route(from, to, costing)` - Returns GEOMETRY type (recommended)
     - `travel_time_route_wkb(from, to, costing)` - Returns WKB BLOB
     - `travel_time_matrix(lats1, lons1, lats2, lons2, costing)` - Distance/duration matrix
     - `travel_time_locate(lat, lon, costing)` - Snap coordinates to road network
     - `travel_time_request(action, json)` - Raw Valhalla JSON API
 
-    ## Prerequisites
+    ## Quick Start (100% Pure SQL)
 
-    Requires pre-built Valhalla routing tiles from OpenStreetMap data:
+    ```sql
+    -- Build tiles from HTTP URL
+    SELECT valhalla_build_tiles(
+        'https://download.geofabrik.de/europe/monaco-latest.osm.pbf',
+        './tiles'
+    );
 
-    ```bash
-    # Download OSM data (e.g., Estonia)
-    curl -o estonia.osm.pbf https://download.geofabrik.de/europe/estonia-latest.osm.pbf
-
-    # Build routing tiles
-    valhalla_build_config --mjolnir-tile-dir ./tiles > valhalla.json
-    valhalla_build_tiles -c valhalla.json estonia.osm.pbf
+    -- Load and route
+    SET valhalla_tiles = './tiles';
+    SELECT travel_time_route(ST_Point(7.42, 43.73), ST_Point(7.43, 43.74), 'auto');
     ```
 
     ## Documentation
