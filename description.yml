@@ -12,7 +12,7 @@ extension:
     - valhalla
 
 repo:
-  github: midwork-finds-jobs/duckdb-routing
+  github: midwork-finds-jobs/duckdb-valhalla-routing
   ref: v0.2.0
 
 docs:
@@ -88,9 +88,9 @@ docs:
 
     ## Documentation
 
-    - [README.md](https://github.com/onnimonni/duckdb-routing/blob/main/README.md) - Quick start and API reference
-    - [ITALY.md](https://github.com/onnimonni/duckdb-routing/blob/main/ITALY.md) - Complete Italy dataset guide
-    - [examples/](https://github.com/onnimonni/duckdb-routing/tree/main/examples) - Ready-to-use examples
+    - [README.md](https://github.com/midwork-finds-jobs/duckdb-valhalla-routing/blob/main/README.md) - Quick start and API reference
+    - [ITALY.md](https://github.com/midwork-finds-jobs/duckdb-valhalla-routing/blob/main/ITALY.md) - Complete Italy dataset guide
+    - [examples/](https://github.com/midwork-finds-jobs/duckdb-valhalla-routing/tree/main/examples) - Ready-to-use examples
 
     ## Datasets
 
