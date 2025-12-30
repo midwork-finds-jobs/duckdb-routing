@@ -12,7 +12,7 @@ extension:
     - valhalla
 
 repo:
-  github: onnimonni/duckdb-routing
+  github: midwork-finds-jobs/duckdb-routing
   ref: v0.2.0
 
 docs:
