@@ -1,0 +1,90 @@
+extension:
+  name: travel_time
+  description: DuckDB extension for travel time and route calculations using Valhalla routing engine
+  version: 0.1.0
+  language: C++
+  build: cmake
+  license: MIT
+  maintainers:
+    - onnimonni
+  excluded_platforms: []
+  requires_toolchains:
+    - valhalla
+
+repo:
+  github: onnimonni/duckdb-routing
+  ref: v0.1.0
+
+docs:
+  hello_world: |
+    -- Load extension and spatial support
+    LOAD travel_time;
+    INSTALL spatial; LOAD spatial;
+
+    -- Load routing tiles (build first with valhalla_build_tiles)
+    SELECT travel_time_load_config('./valhalla_data/valhalla.json');
+
+    -- Load geometry macro for GEOMETRY output
+    .read examples/geometry_macro.sql
+
+    -- Calculate route from Tallinn to Tartu
+    SELECT
+        round(r.distance_km, 1) as km,
+        round(r.duration_minutes, 0) as minutes,
+        ST_NPoints(r.geometry) as waypoints
+    FROM (
+        SELECT travel_time_route(
+            ST_Point(24.7536, 59.4370),  -- Tallinn
+            ST_Point(26.7290, 58.3780),  -- Tartu
+            'auto'
+        ) as r
+    );
+
+  extended_description: |
+    # DuckDB Valhalla Routing Extension
+
+    Point-to-point routing with distance, duration, and geometry using the Valhalla routing engine.
+
+    ## Key Features
+
+    - **Flexible Input**: Accepts WKT strings, WKB blobs, or GEOMETRY types
+    - **GEOMETRY Output**: Returns proper GEOMETRY types (via macro) or WKB blobs
+    - **Multi-Mode Routing**: Supports auto, bicycle, pedestrian, truck, bus, taxi, motor_scooter
+    - **Matrix Queries**: Calculate N×M travel time matrices
+    - **Spatial Integration**: Works seamlessly with DuckDB spatial extension
+
+    ## Functions
+
+    - `travel_time_route(from, to, costing)` - Returns GEOMETRY type (recommended)
+    - `travel_time_route_wkb(from, to, costing)` - Returns WKB BLOB
+    - `travel_time_matrix(lats1, lons1, lats2, lons2, costing)` - Distance/duration matrix
+    - `travel_time_locate(lat, lon, costing)` - Snap coordinates to road network
+    - `travel_time_request(action, json)` - Raw Valhalla JSON API
+
+    ## Prerequisites
+
+    Requires pre-built Valhalla routing tiles from OpenStreetMap data:
+
+    ```bash
+    # Download OSM data (e.g., Estonia)
+    curl -o estonia.osm.pbf https://download.geofabrik.de/europe/estonia-latest.osm.pbf
+
+    # Build routing tiles
+    valhalla_build_config --mjolnir-tile-dir ./tiles > valhalla.json
+    valhalla_build_tiles -c valhalla.json estonia.osm.pbf
+    ```
+
+    ## Documentation
+
+    - [README.md](https://github.com/onnimonni/duckdb-routing/blob/main/README.md) - Quick start and API reference
+    - [ITALY.md](https://github.com/onnimonni/duckdb-routing/blob/main/ITALY.md) - Complete Italy dataset guide
+    - [examples/](https://github.com/onnimonni/duckdb-routing/tree/main/examples) - Ready-to-use examples
+
+    ## Datasets
+
+    Tested with:
+    - Italy (2.4 GB tiles): Rome, Milan, Venice, Florence
+    - Estonia: Tallinn-Tartu examples
+    - Monaco: Test data
+
+    Download OSM extracts from [Geofabrik](https://download.geofabrik.de/)

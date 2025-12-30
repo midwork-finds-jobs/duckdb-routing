@@ -1,0 +1,48 @@
+# name: test/sql/travel_time.test
+# description: test travel_time extension function registration
+# group: [sql]
+
+# Before we load the extension, this will fail
+statement error
+SELECT travel_time_load_config('./valhalla.json');
+----
+Catalog Error: Scalar Function with name travel_time_load_config does not exist!
+
+# Require statement will ensure this test is run with this extension loaded
+require travel_time
+
+# Test all functions exist
+query I
+SELECT function_name FROM duckdb_functions() WHERE function_name = 'travel_time_load_config';
+----
+travel_time_load_config
+
+query I
+SELECT function_name FROM duckdb_functions() WHERE function_name = 'travel_time';
+----
+travel_time
+
+query I
+SELECT function_name FROM duckdb_functions() WHERE function_name = 'travel_time_is_loaded';
+----
+travel_time_is_loaded
+
+query I
+SELECT count(*) FROM duckdb_functions() WHERE function_name = 'travel_time_route_wkb';
+----
+1
+
+query I
+SELECT function_name FROM duckdb_functions() WHERE function_name = 'travel_time_locate';
+----
+travel_time_locate
+
+query I
+SELECT function_name FROM duckdb_functions() WHERE function_name = 'travel_time_request';
+----
+travel_time_request
+
+query I
+SELECT function_name FROM duckdb_functions() WHERE function_name = 'travel_time_matrix';
+----
+travel_time_matrix

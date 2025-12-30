@@ -1,0 +1,72 @@
+# name: test/sql/integration.test
+# description: Integration tests with real Monaco OSM data
+# group: [sql]
+
+require travel_time
+
+# Load Monaco routing data
+query I
+SELECT travel_time_load('{WORKING_DIR}/test/data/monaco.osm.pbf', 'auto');
+----
+true
+
+# Verify data is loaded
+query I
+SELECT travel_time_is_loaded('auto');
+----
+true
+
+# Check node count is reasonable (Monaco has ~5000-15000 road nodes)
+query I
+SELECT travel_time_node_count('auto') > 1000;
+----
+true
+
+# Test point-to-point: Casino to Port Hercules (~1km, should be <5 min driving)
+query I
+SELECT travel_time(43.7397, 7.4282, 43.7347, 7.4207, 'auto') < 300;
+----
+true
+
+# Test snap function returns valid coordinates
+query I
+SELECT (travel_time_snap(43.7397, 7.4282, 'auto')).lat BETWEEN 43.0 AND 44.0;
+----
+true
+
+# Test snap distance is reasonable (<500m)
+query I
+SELECT (travel_time_snap(43.7397, 7.4282, 'auto')).distance_m < 500;
+----
+true
+
+# Test matrix function returns correct number of rows (2x2=4)
+query I
+SELECT count(*) FROM travel_time_matrix(
+    [43.7397, 43.7347],
+    [7.4282, 7.4207],
+    [43.7397, 43.7347],
+    [7.4282, 7.4207],
+    'auto'
+);
+----
+4
+
+# Test isochrone returns results (should have many nodes reachable in 5 min)
+query I
+SELECT count(*) > 100 FROM travel_time_isochrone(43.7397, 7.4282, 300, 'auto');
+----
+true
+
+# Load pedestrian mode
+query I
+SELECT travel_time_load('{WORKING_DIR}/test/data/monaco.osm.pbf', 'pedestrian');
+----
+true
+
+# Walking should be slower than driving
+query I
+SELECT travel_time(43.7397, 7.4282, 43.7347, 7.4207, 'pedestrian') >
+       travel_time(43.7397, 7.4282, 43.7347, 7.4207, 'auto');
+----
+true

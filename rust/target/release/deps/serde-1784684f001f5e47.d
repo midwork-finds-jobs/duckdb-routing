@@ -1,0 +1,14 @@
+/Users/onnimonni/Projects/duckdb-routing/rust/target/release/deps/serde-1784684f001f5e47.d: /Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/onnimonni/Projects/duckdb-routing/rust/target/release/build/serde-19ae4f8116c6885f/out/private.rs
+
+/Users/onnimonni/Projects/duckdb-routing/rust/target/release/deps/libserde-1784684f001f5e47.rlib: /Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/onnimonni/Projects/duckdb-routing/rust/target/release/build/serde-19ae4f8116c6885f/out/private.rs
+
+/Users/onnimonni/Projects/duckdb-routing/rust/target/release/deps/libserde-1784684f001f5e47.rmeta: /Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/onnimonni/Projects/duckdb-routing/rust/target/release/build/serde-19ae4f8116c6885f/out/private.rs
+
+/Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/Users/onnimonni/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/Users/onnimonni/Projects/duckdb-routing/rust/target/release/build/serde-19ae4f8116c6885f/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/onnimonni/Projects/duckdb-routing/rust/target/release/build/serde-19ae4f8116c6885f/out

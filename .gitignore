@@ -6,3 +6,24 @@ duckdb_unittest_tempdir/
 testext
 test/python/__pycache__/
 .Rhistory
+
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
+
+# Valhalla routing tiles (too large for git)
+# Users must build these locally using provided scripts
+**/tiles/
+**/*.osm.pbf
+estonia_tiles/
+italy_tiles/
+valhalla_data/
+**/valhalla.json
+**/build.log
