@@ -14,7 +14,7 @@ DuckDB extension for travel time and route calculations using [Valhalla](https:/
 ## Quick Example: Tallinn to Tartu
 
 ```sql
-LOAD travel_time;
+LOAD valhalla_routing;
 INSTALL spatial; LOAD spatial;
 
 -- Load routing tiles
@@ -254,7 +254,7 @@ SELECT travel_time_is_loaded();
 ## Complete Example: Estonia Routes
 
 ```sql
-LOAD travel_time;
+LOAD valhalla_routing;
 INSTALL spatial; LOAD spatial;
 
 SELECT travel_time_load_config('./estonia_tiles/valhalla.json');

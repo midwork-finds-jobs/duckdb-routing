@@ -10,7 +10,7 @@
 
 INSTALL httpfs; LOAD httpfs;
 INSTALL spatial; LOAD spatial;
-LOAD travel_time;
+LOAD valhalla_routing;
 
 SELECT '╔════════════════════════════════════════════════════════╗';
 SELECT '║   Monaco Routing - 100% Pure SQL Workflow             ║';

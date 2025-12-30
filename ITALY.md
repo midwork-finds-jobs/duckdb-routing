@@ -61,7 +61,7 @@ valhalla_build_tiles -c italy_tiles/valhalla.json italy_tiles/italy.osm.pbf
 ### 1. Simple Route Query
 
 ```sql
-LOAD travel_time;
+LOAD valhalla_routing;
 INSTALL spatial; LOAD spatial;
 
 SELECT travel_time_load_config('./italy_tiles/valhalla.json');
@@ -85,7 +85,7 @@ FROM (
 ### 2. Multiple Cities
 
 ```sql
-LOAD travel_time;
+LOAD valhalla_routing;
 INSTALL spatial; LOAD spatial;
 SELECT travel_time_load_config('./italy_tiles/valhalla.json');
 
@@ -142,7 +142,7 @@ ORDER BY r.result.distance_km;
 ### 3. Using the GEOMETRY Macro
 
 ```sql
-LOAD travel_time;
+LOAD valhalla_routing;
 INSTALL spatial; LOAD spatial;
 SELECT travel_time_load_config('./italy_tiles/valhalla.json');
 
@@ -179,7 +179,7 @@ FROM route;
 ### 4. Travel Time Matrix
 
 ```sql
-LOAD travel_time;
+LOAD valhalla_routing;
 SELECT travel_time_load_config('./italy_tiles/valhalla.json');
 
 -- Travel times between 3 northern cities
@@ -210,7 +210,7 @@ ORDER BY src_idx, dst_idx;
 ### 5. Multi-Mode Comparison
 
 ```sql
-LOAD travel_time;
+LOAD valhalla_routing;
 INSTALL spatial; LOAD spatial;
 SELECT travel_time_load_config('./italy_tiles/valhalla.json');
 
@@ -248,7 +248,7 @@ FROM (
 ### Route Analysis with Spatial Operations
 
 ```sql
-LOAD travel_time;
+LOAD valhalla_routing;
 INSTALL spatial; LOAD spatial;
 SELECT travel_time_load_config('./italy_tiles/valhalla.json');
 .read examples/geometry_macro.sql
@@ -277,7 +277,7 @@ FROM route;
 ### Finding Routes Through Intermediate Points
 
 ```sql
-LOAD travel_time;
+LOAD valhalla_routing;
 INSTALL spatial; LOAD spatial;
 SELECT travel_time_load_config('./italy_tiles/valhalla.json');
 
@@ -306,7 +306,7 @@ FROM leg1, leg2;
 ### Export Routes as GeoJSON
 
 ```sql
-LOAD travel_time;
+LOAD valhalla_routing;
 INSTALL spatial; LOAD spatial;
 SELECT travel_time_load_config('./italy_tiles/valhalla.json');
 

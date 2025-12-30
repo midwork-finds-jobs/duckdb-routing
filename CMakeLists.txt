@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 # Set extension name here
-set(TARGET_NAME travel_time)
+set(TARGET_NAME valhalla_routing)
 
 set(EXTENSION_NAME ${TARGET_NAME}_extension)
 set(LOADABLE_EXTENSION_NAME ${TARGET_NAME}_loadable_extension)

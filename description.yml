@@ -1,6 +1,6 @@
 extension:
-  name: travel_time
-  description: DuckDB extension for travel time and route calculations using Valhalla routing engine
+  name: valhalla_routing
+  description: DuckDB extension for routing and travel time calculations using Valhalla routing engine
   version: 0.2.0
   language: C++
   build: cmake
@@ -20,7 +20,7 @@ docs:
     -- Load extensions
     INSTALL httpfs; LOAD httpfs;
     INSTALL spatial; LOAD spatial;
-    LOAD travel_time;
+    LOAD valhalla_routing;
 
     -- Download and build tiles (Pure SQL!)
     SELECT valhalla_build_tiles(
