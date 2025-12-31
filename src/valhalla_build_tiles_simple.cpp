@@ -4,7 +4,6 @@
 #include "duckdb.hpp"
 #include "duckdb/common/file_system.hpp"
 #include "duckdb/main/extension/extension_loader.hpp"
-#include <filesystem>
 #include <fstream>
 #include <sstream>
 
@@ -173,7 +172,9 @@ static void ValhallaBuildTilesFun(DataChunk &args, ExpressionState &state, Vecto
 
 			try {
 				// Create output directory
-				std::filesystem::create_directories(output_dir);
+				if (!fs.DirectoryExists(output_dir)) {
+					fs.CreateDirectory(output_dir);
+				}
 
 				// Check if input is remote
 				bool is_remote = (pbf_path.substr(0, 7) == "http://" || pbf_path.substr(0, 8) == "https://");

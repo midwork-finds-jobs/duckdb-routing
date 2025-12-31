@@ -3,7 +3,7 @@
 
 #include "duckdb.hpp"
 #include "duckdb/main/config.hpp"
-#include <filesystem>
+#include <fstream>
 
 // External functions from valhalla wrapper
 extern "C" {
@@ -41,10 +41,12 @@ static void SetValhallaTiles(ClientContext &context, SetScope scope, Value &para
 	std::lock_guard<std::mutex> lock(g_router_mutex);
 
 	try {
-		// Check if file exists
-		if (!std::filesystem::exists(config_path)) {
+		// Check if file exists (C++11 compatible)
+		std::ifstream test_file(config_path);
+		if (!test_file.good()) {
 			throw InvalidInputException("Config file not found: " + config_path);
 		}
+		test_file.close();
 
 		// Free existing router if different config
 		if (g_router && g_config_path != config_path) {
