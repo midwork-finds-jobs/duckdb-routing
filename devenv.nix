@@ -109,4 +109,54 @@
       entry = "clang-tidy -p build --fix";
     };
   };
+
+  # Verify description.yml ref exists in GitHub
+  git-hooks.hooks.verify-description-yml-ref = {
+    enable = true;
+    files = "description\\.yml$";
+    entry =
+      let
+        script_path = pkgs.writeShellScript "verify-description-yml-ref" ''
+          set -e
+          for file in "$@"; do
+            if [[ ! -f "$file" ]]; then
+              continue
+            fi
+
+            # Extract repo.github and repo.ref using grep/sed (no yaml parser needed)
+            repo_line=$(grep -A 2 "^repo:" "$file" | grep "github:" | head -1)
+            ref_line=$(grep -A 2 "^repo:" "$file" | grep "ref:" | head -1)
+
+            if [[ -z "$repo_line" || -z "$ref_line" ]]; then
+              echo "Warning: Could not find repo.github or repo.ref in $file"
+              continue
+            fi
+
+            # Extract values (trim whitespace and quotes)
+            repo=$(echo "$repo_line" | sed -E 's/.*github:[[:space:]]*([^[:space:]]+).*/\1/' | tr -d '"')
+            ref=$(echo "$ref_line" | sed -E 's/.*ref:[[:space:]]*([^[:space:]]+).*/\1/' | tr -d '"')
+
+            if [[ -z "$repo" || -z "$ref" ]]; then
+              echo "Error: Empty repo or ref in $file"
+              exit 1
+            fi
+
+            echo "Verifying commit $ref exists in https://github.com/$repo"
+
+            # Check if commit exists using git ls-remote
+            if ! git ls-remote "https://github.com/$repo.git" "$ref" | grep -q "$ref"; then
+              # Try as a commit hash
+              if ! git ls-remote "https://github.com/$repo.git" | grep -q "^$ref"; then
+                echo "Error: Commit $ref does not exist in https://github.com/$repo"
+                echo "Please verify the ref in $file points to a valid commit"
+                exit 1
+              fi
+            fi
+
+            echo "✓ Commit $ref verified in $repo"
+          done
+        '';
+      in
+      toString script_path;
+  };
 }
